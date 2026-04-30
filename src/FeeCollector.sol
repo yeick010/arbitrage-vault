@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
 
-import {IFeeCollector} from "./interfaces/IFeeCollector.sol";
-import {Const} from "./common/Const.sol";
-import {Errors} from "./common/Errors.sol";
+import { IFeeCollector } from "./interfaces/IFeeCollector.sol";
+import { Const } from "./common/Const.sol";
+import { Errors } from "./common/Errors.sol";
 
 /// @title FeeCollector
 /// @notice Routes performance fees to an immutable treasury.

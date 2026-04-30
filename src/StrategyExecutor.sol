@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
 
-import {IStrategyExecutor} from "./interfaces/IStrategyExecutor.sol";
-import {Errors} from "./common/Errors.sol";
+import { IStrategyExecutor } from "./interfaces/IStrategyExecutor.sol";
+import { Errors } from "./common/Errors.sol";
 
 /// @notice Minimal Uniswap V3–style swap router interface used by the executor.
 interface ISwapRouter {
@@ -105,15 +105,16 @@ contract StrategyExecutor is IStrategyExecutor, AccessControl, ReentrancyGuard {
         // Interactions: execute swap — router sends output directly back to vault.
         // The router's `amountOutMinimum` is the primary slippage gate. We then re-check
         // `amountOut >= minAmountOut` (defence-in-depth against non-conforming routers).
-        amountOut = ISwapRouter(params.router).exactInput(
-            ISwapRouter.ExactInputParams({
+        amountOut = ISwapRouter(params.router)
+            .exactInput(
+                ISwapRouter.ExactInputParams({
                 path: params.path,
                 recipient: vault,
                 deadline: params.deadline,
                 amountIn: params.amountIn,
                 amountOutMinimum: params.minAmountOut
             })
-        );
+            );
 
         if (amountOut < params.minAmountOut) {
             revert Errors.InsufficientOutput(amountOut, params.minAmountOut);

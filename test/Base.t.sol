@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Test} from "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import {ArbitrageVault} from "../src/ArbitrageVault.sol";
-import {StrategyExecutor} from "../src/StrategyExecutor.sol";
-import {FeeCollector} from "../src/FeeCollector.sol";
-import {OracleAdapter} from "../src/OracleAdapter.sol";
-import {AccessManager} from "../src/AccessManager.sol";
-import {Const} from "../src/common/Const.sol";
+import { ArbitrageVault } from "../src/ArbitrageVault.sol";
+import { StrategyExecutor } from "../src/StrategyExecutor.sol";
+import { FeeCollector } from "../src/FeeCollector.sol";
+import { OracleAdapter } from "../src/OracleAdapter.sol";
+import { AccessManager } from "../src/AccessManager.sol";
+import { Const } from "../src/common/Const.sol";
 
-import {MockERC20} from "./mocks/MockERC20.sol";
-import {MockChainlinkFeed} from "./mocks/MockChainlinkFeed.sol";
-import {MockTWAPSource} from "./mocks/MockTWAPSource.sol";
-import {MockSwapRouter} from "./mocks/MockSwapRouter.sol";
+import { MockERC20 } from "./mocks/MockERC20.sol";
+import { MockChainlinkFeed } from "./mocks/MockChainlinkFeed.sol";
+import { MockTWAPSource } from "./mocks/MockTWAPSource.sol";
+import { MockSwapRouter } from "./mocks/MockSwapRouter.sol";
 
 /// @notice Shared deployment harness for all test contracts.
 abstract contract Base is Test {
@@ -46,9 +46,7 @@ abstract contract Base is Test {
 
         feeCollector = new FeeCollector(admin, treasury, FEE_BPS);
 
-        vault = new ArbitrageVault(
-            asset, admin, keeper, pauser, address(feeCollector), MAX_PER_TX
-        );
+        vault = new ArbitrageVault(asset, admin, keeper, pauser, address(feeCollector), MAX_PER_TX);
 
         executor = new StrategyExecutor(admin, address(vault), address(asset));
         router = new MockSwapRouter(asset);

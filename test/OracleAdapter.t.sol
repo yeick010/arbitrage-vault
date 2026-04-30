@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Base} from "./Base.t.sol";
-import {OracleAdapter} from "../src/OracleAdapter.sol";
-import {Errors} from "../src/common/Errors.sol";
-import {Const} from "../src/common/Const.sol";
-import {MockChainlinkFeed} from "./mocks/MockChainlinkFeed.sol";
-import {MockTWAPSource} from "./mocks/MockTWAPSource.sol";
+import { Base } from "./Base.t.sol";
+import { OracleAdapter } from "../src/OracleAdapter.sol";
+import { Errors } from "../src/common/Errors.sol";
+import { Const } from "../src/common/Const.sol";
+import { MockChainlinkFeed } from "./mocks/MockChainlinkFeed.sol";
+import { MockTWAPSource } from "./mocks/MockTWAPSource.sol";
 
 contract OracleAdapterTest is Base {
     function test_getPrice_normalisesDecimals() public view {
@@ -36,7 +36,9 @@ contract OracleAdapterTest is Base {
         // TWAP says 110e18, primary 100e18 → 10% deviation > 2% limit
         twap.setPrice(110e18);
         vm.expectRevert(
-            abi.encodeWithSelector(Errors.PriceDeviationTooHigh.selector, 100e18, 110e18, Const.MAX_ORACLE_DEVIATION_BPS)
+            abi.encodeWithSelector(
+                Errors.PriceDeviationTooHigh.selector, 100e18, 110e18, Const.MAX_ORACLE_DEVIATION_BPS
+            )
         );
         oracle.getPrice();
     }

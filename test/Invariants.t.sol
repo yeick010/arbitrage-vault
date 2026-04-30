@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Test} from "forge-std/Test.sol";
-import {StdInvariant} from "forge-std/StdInvariant.sol";
+import { Test } from "forge-std/Test.sol";
+import { StdInvariant } from "forge-std/StdInvariant.sol";
 
-import {ArbitrageVault} from "../src/ArbitrageVault.sol";
-import {FeeCollector} from "../src/FeeCollector.sol";
-import {Const} from "../src/common/Const.sol";
-import {MockERC20} from "./mocks/MockERC20.sol";
+import { ArbitrageVault } from "../src/ArbitrageVault.sol";
+import { FeeCollector } from "../src/FeeCollector.sol";
+import { Const } from "../src/common/Const.sol";
+import { MockERC20 } from "./mocks/MockERC20.sol";
 
 /// @notice Handler exercises deposit/withdraw/redeem from a pool of actors.
 contract VaultHandler is Test {
@@ -36,7 +36,7 @@ contract VaultHandler is Test {
         asset.approve(address(vault), amount);
         try vault.deposit(amount, a) {
             ghostDeposited += amount;
-        } catch {}
+        } catch { }
         vm.stopPrank();
     }
 
@@ -48,7 +48,7 @@ contract VaultHandler is Test {
         vm.prank(a);
         try vault.withdraw(amount, a, a) {
             ghostWithdrawn += amount;
-        } catch {}
+        } catch { }
     }
 
     function redeem(uint256 actorSeed, uint256 shareAmount) external {
@@ -59,7 +59,7 @@ contract VaultHandler is Test {
         vm.prank(a);
         try vault.redeem(shareAmount, a, a) returns (uint256 out) {
             ghostWithdrawn += out;
-        } catch {}
+        } catch { }
     }
 }
 
@@ -76,9 +76,7 @@ contract InvariantsTest is StdInvariant, Test {
     function setUp() public {
         asset = new MockERC20("T", "T", 18);
         fc = new FeeCollector(admin, treasury, 1_000);
-        vault = new ArbitrageVault(
-            asset, admin, makeAddr("k"), makeAddr("p"), address(fc), 1_000_000_000e18
-        );
+        vault = new ArbitrageVault(asset, admin, makeAddr("k"), makeAddr("p"), address(fc), 1_000_000_000e18);
 
         handler = new VaultHandler(vault, asset);
 
@@ -87,7 +85,7 @@ contract InvariantsTest is StdInvariant, Test {
         selectors[0] = VaultHandler.deposit.selector;
         selectors[1] = VaultHandler.withdraw.selector;
         selectors[2] = VaultHandler.redeem.selector;
-        targetSelector(FuzzSelector({addr: address(handler), selectors: selectors}));
+        targetSelector(FuzzSelector({ addr: address(handler), selectors: selectors }));
     }
 
     /// @notice FeeCollector fee is always ≤ 10% (MAX_PERFORMANCE_FEE_BPS).

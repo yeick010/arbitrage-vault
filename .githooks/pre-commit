@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Pre-commit hook: formats Solidity and runs the fast test profile.
+# Enable with:  git config core.hooksPath .githooks
+
+set -e
+
+echo "▶ forge fmt"
+forge fmt --check || {
+    echo "✖ Solidity files not formatted. Run: forge fmt"
+    exit 1
+}
+
+echo "▶ forge test (ci profile)"
+FOUNDRY_PROFILE=ci forge test --silent
+
+echo "✓ pre-commit OK"

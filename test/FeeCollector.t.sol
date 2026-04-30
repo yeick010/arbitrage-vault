@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Base} from "./Base.t.sol";
-import {FeeCollector} from "../src/FeeCollector.sol";
-import {Errors} from "../src/common/Errors.sol";
-import {Const} from "../src/common/Const.sol";
-import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
+import { Base } from "./Base.t.sol";
+import { FeeCollector } from "../src/FeeCollector.sol";
+import { Errors } from "../src/common/Errors.sol";
+import { Const } from "../src/common/Const.sol";
+import { IAccessControl } from "@openzeppelin/contracts/access/IAccessControl.sol";
 
 contract FeeCollectorTest is Base {
     function test_treasury_immutable() public view {

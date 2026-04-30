@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Base} from "./Base.t.sol";
-import {Errors} from "../src/common/Errors.sol";
-import {Const} from "../src/common/Const.sol";
-import {IStrategyExecutor} from "../src/interfaces/IStrategyExecutor.sol";
-import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
-import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ArbitrageVault} from "../src/ArbitrageVault.sol";
-import {MockERC20} from "./mocks/MockERC20.sol";
+import { Base } from "./Base.t.sol";
+import { Errors } from "../src/common/Errors.sol";
+import { Const } from "../src/common/Const.sol";
+import { IStrategyExecutor } from "../src/interfaces/IStrategyExecutor.sol";
+import { IAccessControl } from "@openzeppelin/contracts/access/IAccessControl.sol";
+import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { ArbitrageVault } from "../src/ArbitrageVault.sol";
+import { MockERC20 } from "./mocks/MockERC20.sol";
 
 contract ArbitrageVaultTest is Base {
     /* ─────────────── Constructor / setup ─────────────── */
@@ -183,9 +183,7 @@ contract ArbitrageVaultTest is Base {
             deadline: block.timestamp + 1000
         });
         vm.expectRevert(
-            abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector, alice, vault.KEEPER_ROLE()
-            )
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, alice, vault.KEEPER_ROLE())
         );
         vm.prank(alice);
         vault.executeRebalance(p);
@@ -236,9 +234,7 @@ contract ArbitrageVaultTest is Base {
 
     function test_pause_onlyPauser() public {
         vm.expectRevert(
-            abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector, alice, vault.PAUSER_ROLE()
-            )
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, alice, vault.PAUSER_ROLE())
         );
         vm.prank(alice);
         vault.pause();
@@ -390,9 +386,7 @@ contract ArbitrageVaultTest is Base {
 
     function test_rebalance_revertsWhenStrategyNotSet() public {
         // Deploy a fresh vault without strategy
-        ArbitrageVault freshVault = new ArbitrageVault(
-            asset, admin, keeper, pauser, address(feeCollector), MAX_PER_TX
-        );
+        ArbitrageVault freshVault = new ArbitrageVault(asset, admin, keeper, pauser, address(feeCollector), MAX_PER_TX);
         IStrategyExecutor.ArbitrageParams memory p = IStrategyExecutor.ArbitrageParams({
             router: address(router),
             path: abi.encodePacked(address(asset)),

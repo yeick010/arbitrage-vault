@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Script, console2} from "forge-std/Script.sol";
+import { Script, console2 } from "forge-std/Script.sol";
 
-import {ArbitrageVault} from "../src/ArbitrageVault.sol";
-import {StrategyExecutor} from "../src/StrategyExecutor.sol";
-import {FeeCollector} from "../src/FeeCollector.sol";
-import {OracleAdapter} from "../src/OracleAdapter.sol";
-import {AccessManager} from "../src/AccessManager.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { ArbitrageVault } from "../src/ArbitrageVault.sol";
+import { StrategyExecutor } from "../src/StrategyExecutor.sol";
+import { FeeCollector } from "../src/FeeCollector.sol";
+import { OracleAdapter } from "../src/OracleAdapter.sol";
+import { AccessManager } from "../src/AccessManager.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title Deploy
 /// @notice Deploys the ArbitrageVault system to Sepolia (or any EVM network).
@@ -75,12 +75,7 @@ contract Deploy is Script {
 
         // 4. ArbitrageVault.
         d.vault = new ArbitrageVault(
-            IERC20(cfg.asset),
-            cfg.admin,
-            cfg.keeper,
-            cfg.pauser,
-            address(d.feeCollector),
-            cfg.maxAssetsPerTx
+            IERC20(cfg.asset), cfg.admin, cfg.keeper, cfg.pauser, address(d.feeCollector), cfg.maxAssetsPerTx
         );
         console2.log("ArbitrageVault:", address(d.vault));
 

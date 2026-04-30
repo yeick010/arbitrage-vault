@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import { ERC4626 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { IERC20, IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
+import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import {IFeeCollector} from "./interfaces/IFeeCollector.sol";
-import {IStrategyExecutor} from "./interfaces/IStrategyExecutor.sol";
-import {Const} from "./common/Const.sol";
-import {Errors} from "./common/Errors.sol";
+import { IFeeCollector } from "./interfaces/IFeeCollector.sol";
+import { IStrategyExecutor } from "./interfaces/IStrategyExecutor.sol";
+import { Const } from "./common/Const.sol";
+import { Errors } from "./common/Errors.sol";
 
 /// @title ArbitrageVault
 /// @notice ERC-4626 vault that deposits a single asset and routes capital through a whitelisted
@@ -101,14 +101,7 @@ contract ArbitrageVault is ERC4626, AccessControl, ReentrancyGuard, Pausable {
     /// @param pauser PAUSER_ROLE holder.
     /// @param feeCollector_ Initial FeeCollector.
     /// @param maxPerTx Initial max assets per tx.
-    constructor(
-        IERC20 asset_,
-        address admin,
-        address keeper,
-        address pauser,
-        address feeCollector_,
-        uint256 maxPerTx
-    )
+    constructor(IERC20 asset_, address admin, address keeper, address pauser, address feeCollector_, uint256 maxPerTx)
         ERC20(
             string(abi.encodePacked("ArbitrageVault ", IERC20Metadata(address(asset_)).symbol())),
             string(abi.encodePacked("av", IERC20Metadata(address(asset_)).symbol()))
@@ -116,8 +109,8 @@ contract ArbitrageVault is ERC4626, AccessControl, ReentrancyGuard, Pausable {
         ERC4626(asset_)
     {
         if (
-            admin == address(0) || keeper == address(0) || pauser == address(0)
-                || feeCollector_ == address(0) || address(asset_) == address(0)
+            admin == address(0) || keeper == address(0) || pauser == address(0) || feeCollector_ == address(0)
+                || address(asset_) == address(0)
         ) revert Errors.ZeroAddress();
         if (maxPerTx == 0) revert Errors.InvalidParameter("maxPerTx");
         if (IERC20Metadata(address(asset_)).decimals() > 18) revert Errors.InvalidParameter("assetDecimals");
@@ -145,13 +138,7 @@ contract ArbitrageVault is ERC4626, AccessControl, ReentrancyGuard, Pausable {
     }
 
     /// @inheritdoc ERC4626
-    function deposit(uint256 assets, address receiver)
-        public
-        override
-        whenNotPaused
-        nonReentrant
-        returns (uint256)
-    {
+    function deposit(uint256 assets, address receiver) public override whenNotPaused nonReentrant returns (uint256) {
         _enforceDepositLimits(assets);
         return super.deposit(assets, receiver);
     }
@@ -346,11 +333,7 @@ contract ArbitrageVault is ERC4626, AccessControl, ReentrancyGuard, Pausable {
     /// @notice Rescue non-asset ERC20s mistakenly sent to the vault.
     /// @dev Cannot rescue `asset()` — that is depositor funds. Emits BEFORE the transfer
     ///      to satisfy static analysers flagging reentrancy-events (CEI pattern).
-    function rescueToken(address token, address to, uint256 amount)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-        nonReentrant
-    {
+    function rescueToken(address token, address to, uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) nonReentrant {
         if (token == asset()) revert Errors.InvalidParameter("asset");
         if (to == address(0)) revert Errors.ZeroAddress();
         if (amount == 0) revert Errors.ZeroAmount();

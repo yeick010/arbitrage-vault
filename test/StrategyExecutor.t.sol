@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Base} from "./Base.t.sol";
-import {StrategyExecutor} from "../src/StrategyExecutor.sol";
-import {Errors} from "../src/common/Errors.sol";
-import {IStrategyExecutor} from "../src/interfaces/IStrategyExecutor.sol";
+import { Base } from "./Base.t.sol";
+import { StrategyExecutor } from "../src/StrategyExecutor.sol";
+import { Errors } from "../src/common/Errors.sol";
+import { IStrategyExecutor } from "../src/interfaces/IStrategyExecutor.sol";
 
 contract StrategyExecutorTest is Base {
     function test_onlyVaultCanExecute() public {
@@ -52,11 +52,7 @@ contract StrategyExecutorTest is Base {
     function test_rejectsEmptyPath() public {
         _deposit(alice, 10e18);
         IStrategyExecutor.ArbitrageParams memory p = IStrategyExecutor.ArbitrageParams({
-            router: address(router),
-            path: "",
-            amountIn: 1e18,
-            minAmountOut: 1e18,
-            deadline: block.timestamp + 1000
+            router: address(router), path: "", amountIn: 1e18, minAmountOut: 1e18, deadline: block.timestamp + 1000
         });
         vm.prank(keeper);
         vm.expectRevert(Errors.InvalidPath.selector);
