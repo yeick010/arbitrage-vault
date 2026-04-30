@@ -234,15 +234,20 @@ contract ArbitrageVault is ERC4626, AccessControl, ReentrancyGuard, Pausable {
         if (balanceAfter > hwm) {
             profit = balanceAfter - hwm;
             uint256 fee = feeCollector.computeFee(profit);
+
+            // CEI: update HWM *before* external fee-collect call. If the collect call
+            // were ever to re-enter despite nonReentrant (defence-in-depth), HWM is already
+            // committed so no stale read can help an attacker.
+            uint256 newHWM = balanceAfter - fee;
+            highWaterMark = newHWM;
+            emit Rebalanced(msg.sender, params.amountIn, amountOut, profit, fee);
+
             if (fee > 0) {
-                // Approve exact fee, then pull via collector (pull pattern, CEI-safe).
+                // Approve exact fee, then pull via collector (pull pattern).
                 assetToken.forceApprove(address(feeCollector), fee);
                 feeCollector.collect(address(assetToken), fee);
                 assetToken.forceApprove(address(feeCollector), 0);
-                balanceAfter -= fee;
             }
-            highWaterMark = balanceAfter;
-            emit Rebalanced(msg.sender, params.amountIn, amountOut, profit, fee);
         } else {
             emit Rebalanced(msg.sender, params.amountIn, amountOut, 0, 0);
         }
