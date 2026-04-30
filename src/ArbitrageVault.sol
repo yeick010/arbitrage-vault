@@ -330,7 +330,9 @@ contract ArbitrageVault is ERC4626, AccessControl, ReentrancyGuard, Pausable {
 
     /// @notice Sync high-water mark to current balance. Called after intentional deposits
     ///         are fully included as principal, or after losses are realised.
-    function syncHighWaterMark() external onlyRole(DEFAULT_ADMIN_ROLE) {
+    /// @dev nonReentrant is redundant (no external calls) but added for defence-in-depth
+    ///      — prevents any cross-function reentrancy on `highWaterMark`.
+    function syncHighWaterMark() external onlyRole(DEFAULT_ADMIN_ROLE) nonReentrant {
         highWaterMark = totalAssets();
     }
 

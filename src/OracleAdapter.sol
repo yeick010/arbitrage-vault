@@ -117,11 +117,15 @@ contract OracleAdapter is IOracleAdapter, AccessControl {
 
     function _getPrimaryPrice() internal view returns (uint256 price18) {
         AggregatorV3Interface feed = chainlinkFeed;
-        (uint80 roundId, int256 answer,, uint256 updatedAt, uint80 answeredInRound) = feed.latestRoundData();
+        // Capture all five tuple fields — explicitly read startedAt to satisfy static analysis
+        // that every returned value is observed.
+        (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) =
+            feed.latestRoundData();
 
         if (answer <= 0) revert Errors.InvalidPrice(answer);
-        if (updatedAt == 0) revert Errors.InvalidPrice(0);
+        if (updatedAt == 0 || startedAt == 0) revert Errors.InvalidPrice(0);
         if (block.timestamp - updatedAt > maxPriceAge) {
+            // solhint-disable-next-line not-rely-on-time
             revert Errors.StalePrice(updatedAt, maxPriceAge);
         }
         // Guard against round mismatch (Chainlink best practice).
