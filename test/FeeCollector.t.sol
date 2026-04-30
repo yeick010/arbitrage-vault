@@ -60,7 +60,7 @@ contract FeeCollectorTest is Base {
         vm.startPrank(alice);
         asset.approve(address(feeCollector), 100e18);
         vm.expectRevert(abi.encodeWithSelector(Errors.Unauthorized.selector, alice));
-        feeCollector.collect(address(asset), alice, 100e18);
+        feeCollector.collect(address(asset), 100e18);
         vm.stopPrank();
     }
 
@@ -88,13 +88,13 @@ contract FeeCollectorTest is Base {
     function test_collect_revertsOnZeroAmount() public {
         vm.prank(address(vault));
         vm.expectRevert(Errors.ZeroAmount.selector);
-        feeCollector.collect(address(asset), address(vault), 0);
+        feeCollector.collect(address(asset), 0);
     }
 
     function test_collect_revertsOnZeroToken() public {
         vm.prank(address(vault));
         vm.expectRevert(Errors.ZeroAddress.selector);
-        feeCollector.collect(address(0), address(vault), 1e18);
+        feeCollector.collect(address(0), 1e18);
     }
 
     function testFuzz_computeFee_monotonic(uint256 profit) public view {

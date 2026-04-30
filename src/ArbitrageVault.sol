@@ -235,7 +235,7 @@ contract ArbitrageVault is ERC4626, AccessControl, ReentrancyGuard, Pausable {
             if (fee > 0) {
                 // Approve exact fee, then pull via collector (pull pattern, CEI-safe).
                 assetToken.forceApprove(address(feeCollector), fee);
-                feeCollector.collect(address(assetToken), address(this), fee);
+                feeCollector.collect(address(assetToken), fee);
                 assetToken.forceApprove(address(feeCollector), 0);
                 balanceAfter -= fee;
             }

@@ -10,9 +10,10 @@ interface IFeeCollector {
     /// @notice Current performance fee in basis points (≤ 1_000 = 10%).
     function performanceFeeBps() external view returns (uint256);
 
-    /// @notice Pulls accrued fees in `token` from `from` to the treasury.
-    /// @dev Caller must have set allowance of `amount` for this contract.
-    function collect(address token, address from, uint256 amount) external;
+    /// @notice Pulls accrued fees in `token` from the caller (`msg.sender`) to the treasury.
+    /// @dev Caller must have set allowance of `amount` for this contract. `msg.sender`
+    ///      must be an authorised collector — this avoids any arbitrary `from` arg.
+    function collect(address token, uint256 amount) external;
 
     /// @notice Computes the fee slice for a given profit amount.
     /// @param profit Profit realised (in asset units).

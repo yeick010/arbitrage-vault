@@ -80,16 +80,19 @@ contract FeeCollector is IFeeCollector, AccessControl {
     }
 
     /// @inheritdoc IFeeCollector
-    /// @dev Pulls exactly `amount` of `token` from `from` and forwards to the immutable treasury.
-    ///      Caller MUST be an authorised collector AND `from` MUST have approved this contract.
-    function collect(address token, address from, uint256 amount) external {
+    /// @dev Pulls exactly `amount` of `token` from `msg.sender` and forwards to the immutable
+    ///      treasury. Using `msg.sender` (not an arbitrary `from`) eliminates the
+    ///      `arbitrary-send-erc20` attack surface — only an authorised collector can trigger
+    ///      the pull and only its own balance is touched.
+    function collect(address token, uint256 amount) external {
         if (!authorisedCollector[msg.sender]) revert Errors.Unauthorized(msg.sender);
-        if (token == address(0) || from == address(0)) revert Errors.ZeroAddress();
+        if (token == address(0)) revert Errors.ZeroAddress();
         if (amount == 0) revert Errors.ZeroAmount();
 
-        // Pull from `from`, then forward — CEI: no state changes here other than token balances.
-        IERC20(token).safeTransferFrom(from, treasury, amount);
-        emit FeesCollected(token, from, amount);
+        // Effects before interactions: emit event capturing the intent.
+        emit FeesCollected(token, msg.sender, amount);
+        // Interaction: pull then forward via SafeERC20.
+        IERC20(token).safeTransferFrom(msg.sender, treasury, amount);
     }
 
     /// @notice Computes fee slice for a given profit amount.

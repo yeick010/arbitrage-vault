@@ -1,0 +1,86 @@
+'forge clean' running (wd: /workspace/arbitrage-vault)
+'forge config --json' running
+'forge build --build-info --skip ./test/** ./script/** --force' running (wd: /workspace/arbitrage-vault)
+INFO:Detectors:
+Detector: arbitrary-send-erc20
+FeeCollector.collect(address,address,uint256) (src/FeeCollector.sol#85-93) uses arbitrary from in transferFrom: IERC20(token).safeTransferFrom(from,treasury,amount) (src/FeeCollector.sol#91)
+StrategyExecutor.executeArbitrage(IStrategyExecutor.ArbitrageParams) (src/StrategyExecutor.sol#86-129) uses arbitrary from in transferFrom: assetToken.safeTransferFrom(vault,address(this),params.amountIn) (src/StrategyExecutor.sol#103)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#arbitrary-from-in-transferfrom
+INFO:Detectors:
+Detector: reentrancy-balance
+Reentrancy in StrategyExecutor.executeArbitrage(IStrategyExecutor.ArbitrageParams) (src/StrategyExecutor.sol#86-129):
+	External call allowing reentrancy:
+	- assetToken.safeTransferFrom(vault,address(this),params.amountIn) (src/StrategyExecutor.sol#103)
+	Balance read before the call:
+	- balanceBefore = assetToken.balanceOf(vault) (src/StrategyExecutor.sol#101)
+	Possible stale balance used after the call in a condition:
+	- balanceAfter + params.amountIn < balanceBefore + params.minAmountOut (src/StrategyExecutor.sol#121)
+		- stale variable `balanceBefore`
+Reentrancy in StrategyExecutor.executeArbitrage(IStrategyExecutor.ArbitrageParams) (src/StrategyExecutor.sol#86-129):
+	External call allowing reentrancy:
+	- assetToken.forceApprove(params.router,params.amountIn) (src/StrategyExecutor.sol#104)
+	Balance read before the call:
+	- balanceBefore = assetToken.balanceOf(vault) (src/StrategyExecutor.sol#101)
+	Possible stale balance used after the call in a condition:
+	- balanceAfter + params.amountIn < balanceBefore + params.minAmountOut (src/StrategyExecutor.sol#121)
+		- stale variable `balanceBefore`
+Reentrancy in StrategyExecutor.executeArbitrage(IStrategyExecutor.ArbitrageParams) (src/StrategyExecutor.sol#86-129):
+	External call allowing reentrancy:
+	- amountOut = ISwapRouter(params.router).exactInput(ISwapRouter.ExactInputParams({path:params.path,recipient:vault,deadline:params.deadline,amountIn:params.amountIn,amountOutMinimum:params.minAmountOut})) (src/StrategyExecutor.sol#107-115)
+	Balance read before the call:
+	- balanceBefore = assetToken.balanceOf(vault) (src/StrategyExecutor.sol#101)
+	Possible stale balance used after the call in a condition:
+	- balanceAfter + params.amountIn < balanceBefore + params.minAmountOut (src/StrategyExecutor.sol#121)
+		- stale variable `balanceBefore`
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities
+INFO:Detectors:
+Detector: reentrancy-no-eth
+Reentrancy in ArbitrageVault.executeRebalance(IStrategyExecutor.ArbitrageParams) (src/ArbitrageVault.sol#202-247):
+	External calls:
+	- assetToken.forceApprove(address(_strategy),params.amountIn) (src/ArbitrageVault.sol#219)
+	- amountOut = _strategy.executeArbitrage(params) (src/ArbitrageVault.sol#222)
+	- assetToken.forceApprove(address(_strategy),0) (src/ArbitrageVault.sol#226)
+	- assetToken.forceApprove(address(feeCollector),fee) (src/ArbitrageVault.sol#237)
+	- feeCollector.collect(address(assetToken),address(this),fee) (src/ArbitrageVault.sol#238)
+	- assetToken.forceApprove(address(feeCollector),0) (src/ArbitrageVault.sol#239)
+	State variables written after the call(s):
+	- highWaterMark = balanceAfter (src/ArbitrageVault.sol#242)
+	ArbitrageVault.highWaterMark (src/ArbitrageVault.sol#66) can be used in cross function reentrancies:
+	- ArbitrageVault.highWaterMark (src/ArbitrageVault.sol#66)
+	- ArbitrageVault.syncHighWaterMark() (src/ArbitrageVault.sol#333-335)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+INFO:Detectors:
+Detector: unused-return
+OracleAdapter._getPrimaryPrice() (src/OracleAdapter.sol#118-138) ignores return value by (roundId,answer,None,updatedAt,answeredInRound) = feed.latestRoundData() (src/OracleAdapter.sol#120)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return
+INFO:Detectors:
+Detector: reentrancy-events
+Reentrancy in FeeCollector.collect(address,address,uint256) (src/FeeCollector.sol#85-93):
+	External calls:
+	- IERC20(token).safeTransferFrom(from,treasury,amount) (src/FeeCollector.sol#91)
+	Event emitted after the call(s):
+	- FeesCollected(token,from,amount) (src/FeeCollector.sol#92)
+Reentrancy in ArbitrageVault.rescueToken(address,address,uint256) (src/ArbitrageVault.sol#339-345):
+	External calls:
+	- IERC20(token).safeTransfer(to,amount) (src/ArbitrageVault.sol#343)
+	Event emitted after the call(s):
+	- EmergencyRescue(token,to,amount) (src/ArbitrageVault.sol#344)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-4
+INFO:Detectors:
+Detector: timestamp
+ArbitrageVault._consume(ArbitrageVault.PendingAddress) (src/ArbitrageVault.sol#374-381) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp < slot.readyAt (src/ArbitrageVault.sol#376)
+OracleAdapter._getPrimaryPrice() (src/OracleAdapter.sol#118-138) uses timestamp for comparisons
+	Dangerous comparisons:
+	- block.timestamp - updatedAt > maxPriceAge (src/OracleAdapter.sol#124)
+StrategyExecutor.executeArbitrage(IStrategyExecutor.ArbitrageParams) (src/StrategyExecutor.sol#86-129) uses timestamp for comparisons
+	Dangerous comparisons:
+	- params.deadline < block.timestamp (src/StrategyExecutor.sol#98)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+Detector: unindexed-event-address
+Event ArbitrageVault.ChangeScheduled(string,address,uint256) (src/ArbitrageVault.sol#83) has address parameters but no indexed parameters
+Event ArbitrageVault.ChangeApplied(string,address,address) (src/ArbitrageVault.sol#89) has address parameters but no indexed parameters
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unindexed-event-address-parameters
+INFO:Slither:. analyzed (32 contracts with 101 detectors), 14 result(s) found

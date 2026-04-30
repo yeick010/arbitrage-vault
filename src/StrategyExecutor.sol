@@ -97,13 +97,14 @@ contract StrategyExecutor is IStrategyExecutor, AccessControl, ReentrancyGuard {
         // solhint-disable-next-line not-rely-on-time
         if (params.deadline < block.timestamp) revert Errors.InvalidParameter("deadline");
 
-        // Checks done. Effects: snapshot vault balance for delta calc, pull funds.
-        uint256 balanceBefore = assetToken.balanceOf(vault);
-
-        assetToken.safeTransferFrom(vault, address(this), params.amountIn);
+        // Checks done. Effects: pull funds from msg.sender (== vault, enforced by onlyVault).
+        // Using msg.sender (not an arbitrary `from`) eliminates the arbitrary-send-erc20 surface.
+        assetToken.safeTransferFrom(msg.sender, address(this), params.amountIn);
         assetToken.forceApprove(params.router, params.amountIn);
 
         // Interactions: execute swap — router sends output directly back to vault.
+        // The router's `amountOutMinimum` is the primary slippage gate. We then re-check
+        // `amountOut >= minAmountOut` (defence-in-depth against non-conforming routers).
         amountOut = ISwapRouter(params.router).exactInput(
             ISwapRouter.ExactInputParams({
                 path: params.path,
@@ -114,15 +115,11 @@ contract StrategyExecutor is IStrategyExecutor, AccessControl, ReentrancyGuard {
             })
         );
 
-        // Sanity: vault balance must have increased by >= minAmountOut - amountIn
-        // (we already sent amountIn out, router returned amountOut ≥ minAmountOut).
-        uint256 balanceAfter = assetToken.balanceOf(vault);
-        // balanceAfter == balanceBefore - amountIn + amountOut (invariant)
-        if (balanceAfter + params.amountIn < balanceBefore + params.minAmountOut) {
+        if (amountOut < params.minAmountOut) {
             revert Errors.InsufficientOutput(amountOut, params.minAmountOut);
         }
 
-        // Clear allowance.
+        // Clear allowance (defence-in-depth for non-standard tokens).
         assetToken.forceApprove(params.router, 0);
 
         emit ArbitrageExecuted(params.router, params.amountIn, amountOut);
