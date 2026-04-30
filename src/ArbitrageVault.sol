@@ -80,13 +80,15 @@ contract ArbitrageVault is ERC4626, AccessControl, ReentrancyGuard, Pausable {
 
     /// @notice Emitted when a timelocked setter is scheduled.
     /// @param kind Config key ("feeCollector" | "strategy" | "oracle").
-    event ChangeScheduled(string kind, address newValue, uint256 readyAt);
+    /// @param newValue The proposed new address.
+    /// @param readyAt Earliest timestamp at which the change may be applied.
+    event ChangeScheduled(string kind, address indexed newValue, uint256 readyAt);
 
     /// @notice Emitted when a timelocked setter is cancelled.
     event ChangeCancelled(string kind);
 
     /// @notice Emitted when a timelocked setter is executed.
-    event ChangeApplied(string kind, address oldValue, address newValue);
+    event ChangeApplied(string kind, address indexed oldValue, address indexed newValue);
 
     /// @notice Emitted on emergency rescue of non-asset tokens.
     event EmergencyRescue(address indexed token, address indexed to, uint256 amount);
@@ -337,13 +339,18 @@ contract ArbitrageVault is ERC4626, AccessControl, ReentrancyGuard, Pausable {
     }
 
     /// @notice Rescue non-asset ERC20s mistakenly sent to the vault.
-    /// @dev Cannot rescue `asset()` — that is depositor funds.
-    function rescueToken(address token, address to, uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    /// @dev Cannot rescue `asset()` — that is depositor funds. Emits BEFORE the transfer
+    ///      to satisfy static analysers flagging reentrancy-events (CEI pattern).
+    function rescueToken(address token, address to, uint256 amount)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+        nonReentrant
+    {
         if (token == asset()) revert Errors.InvalidParameter("asset");
         if (to == address(0)) revert Errors.ZeroAddress();
         if (amount == 0) revert Errors.ZeroAmount();
-        IERC20(token).safeTransfer(to, amount);
         emit EmergencyRescue(token, to, amount);
+        IERC20(token).safeTransfer(to, amount);
     }
 
     /* ─────────────── View helpers ─────────────── */
